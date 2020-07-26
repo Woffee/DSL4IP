@@ -12,6 +12,7 @@ from yolov3 import Yolo
 from agender import Agender
 from face_classification.src.emotion import Emotion
 from food_detection.food_detection import Food
+from PSPNET.inference import MyPSPNET
 
 ipl_grammar = """
     start: statement+
@@ -25,7 +26,7 @@ ipl_grammar = """
                | "tag the" + OBJECTS + "in this image"           -> tag_objects
                | "what are in this image?"                       -> show_statistics
                | "detect food in this image"                     -> detect_food
-               
+               | "semantic segmentation"                         -> image_segmentation
 
     MATHOP: "+"|"-"|"*"|"/"
     IMAGE: (LETTER|NUMBER|"_")+"."LETTER+
@@ -51,6 +52,7 @@ class IPDSL():
         self.agender = None
         self.emotion = None
         self.food = None
+        self.pspnet = None
 
         self.original_img = None
         self.img_path = ''
@@ -251,6 +253,9 @@ class IPDSL():
         elif s.data == 'detect_food':
             self.detect_food(img_path)
 
+        elif s.data == 'image_segmentation':
+            img = self.image_segmentation(img_path)
+
         return img
 
     def process(self, img, cmd, img_path):
@@ -302,6 +307,16 @@ class IPDSL():
             self.msg = " * " + name
         else:
             self.msg = " * no food"
+
+    def image_segmentation(self, img_path):
+        if self.pspnet is None:
+            self.pspnet = MyPSPNET()
+        arr = self.pspnet.detect(img_path)
+        arr = arr.astype(np.uint8)
+
+        img = Image.fromarray( arr )
+        self.msg = " * done"
+        return img
 
 
 if __name__ == '__main__':

@@ -1,0 +1,7 @@
+./ade20k_model
+./cityscapes_model
+model.ckpt-*
+checkpoint
+*.pyc
+__pycache__
+
